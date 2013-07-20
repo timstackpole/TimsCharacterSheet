@@ -2,6 +2,7 @@
 
 # Getting the QT libraries.
 from PyQt4 import QtCore, QtGui
+import os
 
 # Our primary class where the magic happens
 class TimCharacterSheet(QtGui.QMainWindow):
@@ -15,8 +16,16 @@ class TimCharacterSheet(QtGui.QMainWindow):
 		self.createFileMenu()
 		# Set the initial size of the application
 		self.resize(1024, 768)
+		# Make the whole window a text box
+		self.text = QtGui.QTextEdit(self)
+		# Show the text box
+		self.setCentralWidget(self.text)
+
 	# File Menu
 	def createFileMenu(self):
+		#
+		# The Quit option in the File Menu
+		#
 		# The first option of a quit button is easy
 		exitOption = QtGui.QAction('&Exit', self)
 		# Allow for keyboard shortcut
@@ -24,16 +33,72 @@ class TimCharacterSheet(QtGui.QMainWindow):
 		# The status shows up at the bottom of the window title
 		exitOption.setStatusTip('Exit application')
 		# Connect the button with a quit
-		exitOption.triggered.connect(QtGui.qApp.quit)
+		exitOption.triggered.connect(self.close)
+		#
+		# The Save option in the File Menu
+		#
+		saveOption = QtGui.QAction('&Save', self)
+		# Allow for keyboard shortcut
+		saveOption.setShortcut('Ctrl+S')
+		# The status shows up at the bottom of the window title
+		saveOption.setStatusTip('Save the file.')
+		# Connect the button with a quit
+		saveOption.triggered.connect(self.saveFile)
+		
+		#
+		# The Open option in the File Menu
+		#
+		openOption = QtGui.QAction('&Open', self)
+		# Allow for keyboard shortcut
+		openOption.setShortcut('Ctrl+O')
+		# The status shows up at the bottom of the window title
+		openOption.setStatusTip('Open a file.')
+		# Connect the button with a quit
+		openOption.triggered.connect(self.openFile)
+		
+		#
 		# Making the statusBar appear on the bottom of the window
+		#
 		self.statusBar()
+
+		#
 		# Creating the menu bar
+		#
 		menubar = self.menuBar()
 		# Giving a title to the file menu
 		fileMenu = menubar.addMenu('&File')
-		# Displaying the file menu
+		# Add the open option to the menu
+		fileMenu.addAction(openOption)
+		# Add the save option to the menu
+		fileMenu.addAction(saveOption)
+		# Add the exit option to the menu
 		fileMenu.addAction(exitOption)
 
+	# Saving a file
+	def saveFile(self):
+		# Start the user off in their home directory
+		filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File', os.getenv('HOME'))
+		# Open the file context for writing
+		f = open(filename, 'w')
+		# Save it out as plain text
+		filedata = self.text.toPlainText()
+		# Close the write stream
+		f.write(filedata)
+		# Close the file
+		f.close()
+	
+	# Opening a file; almost cutNpaste from save with tweaks
+	def openFile(self):
+		# Start the user off in their home directory
+		filename = QtGui.QFileDialog.getOpenFileName(self, 'Open File', os.getenv('HOME'))
+		# Open the file context for writing
+		f = open(filename, 'r')
+		# Read in the text
+		filedata = f.read()
+		# Set the text
+		self.text.setText(filedata)
+		# Close the file
+		f.close()
 
 # Our main class. Basically this only runs if the python script is called
 # directly.
